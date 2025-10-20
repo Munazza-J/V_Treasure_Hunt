@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeQuest Terminal</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+  }
+  .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    flex-direction: column;
+  }
+  .hidden {
+    display: none;
+  }
+  input, button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    padding: 5px 10px;
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+  }
+  .feedback {
+    margin-top: 10px;
+    font-style: italic;
+  }
+  .error { color: red; }
+  .success { color: lime; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .cell {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #0f0;
+    cursor: pointer;
+  }
+  .active {
+    background: #0f0;
+  }
+  .portal-btn {
+    margin: 10px;
+    padding: 15px 25px;
+    border: 1px solid #0f0;
+    cursor: pointer;
+  }
+  .flicker {
+    animation: flicker 1s linear infinite alternate;
+  }
+  @keyframes flicker {
+    from { opacity: 1; }
+    to { opacity: 0.7; }
+  }
+</style>
+</head>
+<body>
+<div id="screen" class="center"></div>
+
+<script>
+const screen = document.getElementById("screen");
+
+function typeText(text, callback) {
+  let i = 0;
+  screen.innerHTML = "";
+  const interval = setInterval(() => {
+    screen.innerHTML = text.substring(0, i);
+    i++;
+    if (i > text.length) {
+      clearInterval(interval);
+      if (callback) setTimeout(callback, 500);
+    }
+  }, 40);
+}
+
+function fadeTransition(nextFn) {
+  screen.classList.add("flicker");
+  setTimeout(() => {
+    screen.classList.remove("flicker");
+    nextFn();
+  }, 800);
+}
+
+// ----- INTRO -----
+function intro() {
+  typeText(">> SYSTEM REBOOTING...\n\nYou awaken in a dark virtual chamber.\nYou are trapped inside CodeQuest.\nSolve the riddles to unlock the exit.\nEach answer will lead you closer to freedom.\n\nChoose wisely — only ONE portal leads out...\n\nPress ENTER to begin.", () => {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        document.removeEventListener("keydown", this);
+        fadeTransition(level1_riddle1);
+      }
+    });
+  });
+}
+
+// ----- LEVEL 1 -----
+function level1_riddle1() {
+  screen.innerHTML = `
+    <h2>LEVEL 1 — THE THREE RIDDLES</h2>
+    <p>Riddle 1:<br>Programmers' haven, where software is woven.<br>Debugger, editor, in one fold, this place is gold.<br><br>What am I?</p>
+    <input id="ans1" placeholder="Your answer">
+    <button onclick="checkRiddle1()">Submit</button>
+    <div id="feedback1" class="feedback"></div>
+  `;
+}
+
+function checkRiddle1() {
+  const ans = document.getElementById("ans1").value.trim().toUpperCase();
+  const f = document.getElementById("feedback1");
+  if (ans === "IDE") {
+    f.className = "feedback success";
+    f.textContent = "Correct! Moving to next riddle...";
+    fadeTransition(level1_riddle2);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "Wrong! Try again.";
+  }
+}
+
+function level1_riddle2() {
+  screen.innerHTML = `
+    <h2>LEVEL 1 — RIDDLE 2</h2>
+    <p>In queries I'm structured, I cannot lie;<br>I talk to databases, never shy.<br><br>What am I?</p>
+    <input id="ans2" placeholder="Your answer">
+    <button onclick="checkRiddle2()">Submit</button>
+    <div id="feedback2" class="feedback"></div>
+  `;
+}
+
+function checkRiddle2() {
+  const ans = document.getElementById("ans2").value.trim().toUpperCase();
+  const f = document.getElementById("feedback2");
+  if (ans === "SQL") {
+    f.className = "feedback success";
+    f.textContent = "Correct! Final riddle coming up...";
+    fadeTransition(level1_riddle3);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "Wrong! Try again.";
+  }
+}
+
+function level1_riddle3() {
+  screen.innerHTML = `
+    <h2>LEVEL 1 — RIDDLE 3</h2>
+    <p>I'm not an insect, yet I sneak around<br>and might make your program break down.<br><br>What am I?</p>
+    <input id="ans3" placeholder="Your answer">
+    <button onclick="checkRiddle3()">Submit</button>
+    <div id="feedback3" class="feedback"></div>
+  `;
+}
+
+function checkRiddle3() {
+  const ans = document.getElementById("ans3").value.trim().toUpperCase();
+  const f = document.getElementById("feedback3");
+  if (ans === "BUG") {
+    f.className = "feedback success";
+    f.textContent = "Correct! You’ve gathered your first clue: The number THREE.";
+    fadeTransition(level2);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "Wrong! Try again.";
+  }
+}
+
+// ----- LEVEL 2 -----
+function level2() {
+  screen.innerHTML = `
+    <h2>LEVEL 2 — DEBUGGING GRID</h2>
+    <p>Find the output of this code:<br><br><code>a = [1, 2, 3]<br>b = a<br>b.append(4)<br>print(len(a))</code><br><br>Activate the same number of grid cells as the output.</p>
+    <div class="grid" id="grid"></div>
+    <button onclick="checkGrid()">Check</button>
+    <div id="feedbackGrid" class="feedback"></div>
+  `;
+  const grid = document.getElementById("grid");
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.classList.add("cell");
+    cell.addEventListener("click", () => cell.classList.toggle("active"));
+    grid.appendChild(cell);
+  }
+}
+
+function checkGrid() {
+  const activeCount = document.querySelectorAll(".active").length;
+  const f = document.getElementById("feedbackGrid");
+  if (activeCount === 3) {
+    f.className = "feedback success";
+    f.textContent = "Correct! Another clue: THREE again.";
+    fadeTransition(level3);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "That’s not quite right. Try again.";
+  }
+}
+
+// ----- LEVEL 3 -----
+function level3() {
+  screen.innerHTML = `
+    <h2>LEVEL 3 — THE CODED WORD</h2>
+    <p>Decode the message below using the rule (Shift +2):<br><br><code>VJG EQFG KU HTGG</code></p>
+    <input id="decode" placeholder="Your decoded message">
+    <button onclick="checkDecode()">Submit</button>
+    <div id="feedbackDecode" class="feedback"></div>
+  `;
+}
+
+function checkDecode() {
+  const ans = document.getElementById("decode").value.trim().toUpperCase();
+  const f = document.getElementById("feedbackDecode");
+  if (ans === "THE CODE IS FREE") {
+    f.className = "feedback success";
+    f.textContent = "Correct! Now rearrange these letters: EHTRE";
+    setTimeout(() => {
+      fadeTransition(level3b);
+    }, 1200);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "Wrong decoding. Try again.";
+  }
+}
+
+function level3b() {
+  screen.innerHTML = `
+    <h2>LEVEL 3 — FINAL PUZZLE</h2>
+    <p>The final answer rhymes with the last letter.<br>Rearrange the letters below to form it:<br><br><code>EHTRE</code></p>
+    <input id="arrange" placeholder="Your answer">
+    <button onclick="checkArrange()">Submit</button>
+    <div id="feedbackArrange" class="feedback"></div>
+  `;
+}
+
+function checkArrange() {
+  const ans = document.getElementById("arrange").value.trim().toUpperCase();
+  const f = document.getElementById("feedbackArrange");
+  if (ans === "THREE") {
+    f.className = "feedback success";
+    f.textContent = "You solved it! The pattern is clear... THREE.";
+    fadeTransition(finalPortal);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "Wrong word. Try again.";
+  }
+}
+
+// ----- FINAL PORTAL -----
+function finalPortal() {
+  screen.innerHTML = `
+    <h2>FINAL PORTAL</h2>
+    <p>You reach three shimmering portals.<br>Only one leads to freedom.<br>Choose wisely — a wrong portal will trap you forever...</p>
+    <div>
+      <button class="portal-btn" onclick="choosePortal(1)">Portal 1</button>
+      <button class="portal-btn" onclick="choosePortal(2)">Portal 2</button>
+      <button class="portal-btn" onclick="choosePortal(3)">Portal 3</button>
+    </div>
+    <div id="portalFeedback" class="feedback"></div>
+  `;
+}
+
+function choosePortal(n) {
+  const f = document.getElementById("portalFeedback");
+  if (n === 3) {
+    f.className = "feedback success";
+    f.textContent = "ACCESS GRANTED — You escaped CodeQuest!";
+    setTimeout(() => {
+      screen.innerHTML = `
+        <h2>YOU ESCAPED</h2>
+        <p>Congratulations, explorer!<br>You’ve completed CodeQuest.<br><br>Your final key: <b>CODETHREE</b></p>
+      `;
+    }, 1500);
+  } else {
+    f.className = "feedback error";
+    f.textContent = "ACCESS DENIED — You’re trapped forever.";
+  }
+}
+
+// start
+intro();
+</script>
+</body>
+</html>
