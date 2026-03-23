@@ -1,435 +1,375 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>CodeQuest — Digital Escape</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        font-family: "Fira Code", monospace;
-        background: #020202;
-        color: #00ff99;
-        overflow: hidden;
-        animation: bgPulse 5s infinite ease-in-out;
-      }
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CodeQuest — Digital Vault Escape</title>
 
-      /* Background pulse */
-      @keyframes bgPulse {
-        0%,
-        100% {
-          background-color: #020202;
-        }
-        50% {
-          background-color: #050505;
-        }
-      }
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
 
-      .screen {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-      }
-      .panel {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 24px;
-        box-sizing: border-box;
-        transition:
-          opacity 0.35s ease,
-          transform 0.35s ease;
-        pointer-events: none;
-        opacity: 0;
-        transform: scale(0.98);
-      }
-      .panel.visible {
-        opacity: 1;
-        transform: scale(1);
-        pointer-events: auto;
-      }
-      .card {
-        min-width: 300px;
-        max-width: 900px;
-        width: 86%;
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(0, 255, 153, 0.08);
-        padding: 18px;
-        border-radius: 10px;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
-      }
-      #intro-text {
-        white-space: pre-line;
-        font-size: 18px;
-        line-height: 1.35;
-        color: #7fffd4;
-        animation: flickerText 2s infinite alternate;
-      }
-      #cursor {
-        display: inline-block;
-        margin-left: 6px;
-        animation: blink 1s steps(1) infinite;
-        color: #00ff99;
-      }
-      @keyframes blink {
-        50% {
-          opacity: 0;
-        }
-      }
-      #timer {
-        position: fixed;
-        top: 12px;
-        right: 18px;
-        color: #00ff99;
-        font-size: 14px;
-        background: rgba(0, 0, 0, 0.25);
-        padding: 6px 8px;
-        border-radius: 6px;
-        border: 1px solid rgba(0, 255, 153, 0.06);
-        display: none;
-        text-shadow: 0 0 6px #00ff99;
-        transition: all 0.3s ease;
-      }
-      #timer.warning {
-        color: #ff4444;
-        text-shadow: 0 0 10px #ff0000;
-        border-color: rgba(255, 0, 0, 0.2);
-        animation: pulse 1s infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1.1);
-          opacity: 0.8;
-        }
-      }
-      @keyframes flickerText {
-        0%,
-        19%,
-        21%,
-        23%,
-        25%,
-        54%,
-        56%,
-        100% {
-          opacity: 1;
-        }
-        20%,
-        22%,
-        24%,
-        55% {
-          opacity: 0.6;
-        }
-      }
+<style>
 
-      h1,
-      h2 {
-        margin: 8px 0 10px 0;
-        color: #7af0c5;
-        letter-spacing: 1px;
-      }
-      pre {
-        background: #00110a;
-        color: #00ff99;
-        padding: 10px;
-        border-radius: 6px;
-        text-align: left;
-        overflow: auto;
-      }
-      .input {
-        background: transparent;
-        border: 1px solid rgba(0, 255, 153, 0.15);
-        color: #00ff99;
-        padding: 8px 10px;
-        border-radius: 6px;
-        outline: none;
-        min-width: 160px;
-      }
-      .btn {
-        background: #00ff99;
-        color: #001010;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-left: 8px;
-      }
-      .btn:active {
-        transform: translateY(1px);
-      }
-      .feedback {
-        margin-top: 10px;
-        font-weight: 700;
-        min-height: 20px;
-      }
-      .ok {
-        color: #7effb5;
-      }
-      .err {
-        color: #ff6b6b;
-      }
-      .row {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 12px;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 72px);
-        gap: 12px;
-        justify-content: center;
-        margin-top: 12px;
-      }
-      .cell {
-        width: 72px;
-        height: 72px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(0, 255, 153, 0.12);
-        border-radius: 8px;
-        cursor: pointer;
-        background: transparent;
-        font-size: 18px;
-      }
-      .cell.active {
-        background: #00ff99;
-        color: #001010;
-        box-shadow: 0 10px 30px rgba(0, 255, 153, 0.06);
-        border-color: #7effb5;
-      }
-      .seq {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-        margin-top: 12px;
-        flex-wrap: wrap;
-      }
-      .letter {
-        padding: 10px 14px;
-        border: 1px solid rgba(0, 255, 153, 0.12);
-        border-radius: 8px;
-        cursor: pointer;
-        background: transparent;
-        font-size: 16px;
-        user-select: none;
-      }
-      .portal {
-        padding: 10px 14px;
-        border-radius: 8px;
-        border: 1px solid rgba(0, 255, 153, 0.12);
-        background: rgba(0, 0, 0, 0.4);
-        cursor: pointer;
-      }
-      .portal.glow {
-        box-shadow: 0 6px 20px rgba(0, 255, 153, 0.14);
-        border-color: #7effb5;
-        background: #002b1f;
-        transform: translateY(-2px);
-      }
-      .qr {
-        margin: 20px auto 0; /* more top margin, auto horizontal */
-        width: 160px;
-        height: 160px;
-        background: #00110a;
-        border-radius: 12px;
-        border: 1px solid rgba(0, 255, 153, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #00ff99;
-        flex-shrink: 0;
-      }
-      .qr img {
-        width: 140px; /* slightly smaller than container */
-        height: 140px;
-        object-fit: contain;
-        border-radius: 8px;
-      }
+html,body{
+height:100%;
+margin:0;
+font-family:"Fira Code",monospace;
+background:#020202;
+color:#00ff99;
+overflow:auto;
+}
 
-      .flick {
-        position: fixed;
-        inset: 0;
-        background: #00ff99;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.25s ease;
-        z-index: 9999;
-      }
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
 
-      /* Glitch overlay */
-      @keyframes glitch {
-        0%,
-        100% {
-          /* ✅ add % here */
-          opacity: 0;
-        }
-        50% {
-          opacity: 0.15;
-        }
-      }
+.screen{
+height:100%;
+width:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+z-index:2;
+}
 
-      .glitchy::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-          to bottom,
-          rgba(0, 255, 153, 0.03) 0,
-          rgba(0, 255, 153, 0.03) 2px,
-          transparent 2px,
-          transparent 4px
-        );
-        animation: glitch 1s infinite ease-in-out;
-        pointer-events: none;
-        z-index: 5000;
-      }
+.panel{
+position:absolute;
+inset:0;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+padding:24px;
+box-sizing:border-box;
+opacity:0;
+pointer-events:none;
+transform:scale(.98);
+transition:.35s;
+}
 
-      @media (max-width: 880px) {
-        .grid {
-          grid-template-columns: repeat(3, 56px);
-          gap: 10px;
-        }
-        .cell {
-          width: 56px;
-          height: 56px;
-          font-size: 16px;
-        }
-        .card {
-          width: 92%;
-        }
-      }
-    </style>
-  </head>
-  <body class="glitchy">
-    <div class="screen">
-      <div id="timer">⏳ 05:00</div>
+.panel.visible{
+opacity:1;
+pointer-events:auto;
+transform:scale(1);
+}
 
-      <!-- INTRO -->
-      <div id="panel-intro" class="panel visible">
-        <div class="card">
-          <div id="intro-text"></div>
-          <span id="cursor">█</span>
-        </div>
-      </div>
+.card{
+width:92%;
+max-width:900px;
+background:rgba(0,0,0,.55);
+border:1px solid rgba(0,255,153,.15);
+padding:14px;
+border-radius:10px;
+}
 
-      <!-- LEVEL 1 -->
-      <div id="panel-1" class="panel">
-        <div class="card">
-          <h2>LEVEL 1 — THE THREE RIDDLES</h2>
-          <p>Each riddle unlocks the next. Solve all to proceed.</p>
+h1,h2{
+color:#7af0c5;
+}
 
-          <div id="r1">
-            <p>
-              <em>Riddle 1:</em> Programmers' haven, where software is woven.
-              Debugger, editor, in one fold, this place is gold.
-            </p>
-            <input
-              id="l1a"
-              class="input"
-              type="text"
-              placeholder="Answer"
-            /><button class="btn" onclick="checkR1()">Submit</button>
-            <div id="fb1a" class="feedback"></div>
-          </div>
+h1{
+font-size:clamp(20px,5vw,28px);
+}
 
-          <div id="r2" style="display: none">
-            <p>
-              <em>Riddle 2:</em> In queries I'm structured, I cannot lie; I talk
-              to databases, never shy.
-            </p>
-            <input
-              id="l1b"
-              class="input"
-              type="text"
-              placeholder="Answer"
-            /><button class="btn" onclick="checkR2()">Submit</button>
-            <div id="fb1b" class="feedback"></div>
-          </div>
+h2{
+font-size:clamp(16px,4.5vw,22px);
+}
 
-          <div id="r3" style="display: none">
-            <p>
-              <em>Riddle 3:</em> I'm not an insect, yet I sneak around and might
-              make your program break down.
-            </p>
-            <input
-              id="l1c"
-              class="input"
-              type="text"
-              placeholder="Answer"
-            /><button class="btn" onclick="checkR3()">Submit</button>
-            <div id="fb1c" class="feedback"></div>
-          </div>
-        </div>
-      </div>
+p{
+font-size:clamp(13px,3.5vw,16px);
+}
 
-      <!-- LEVEL 2 -->
-      <div id="panel-2" class="panel">
-        <div class="card">
-          <h2>LEVEL 2 — DEBUGGING GRID</h2>
-          <p>
-            Read the snippet and choose the number of cells to activate in the
-            grid.
-          </p>
-          <pre>
+.input, .btn{
+width:100%;
+max-width:300px;
+}
+
+.input{
+background:transparent;
+border:1px solid rgba(0,255,153,.3);
+color:#00ff99;
+padding:8px;
+border-radius:6px;
+margin-top:10px;
+}
+
+.btn{
+background:#00ff99;
+border:none;
+padding:12px;      /* 👈 BIGGER for touch */
+border-radius:6px;
+cursor:pointer;
+margin-top:10px;   /* 👈 ADD */
+width:100%;        /* 👈 MOBILE FRIENDLY */
+max-width:320px;
+}
+
+.feedback{
+margin-top:10px;
+font-weight:700;
+min-height:20px;
+}
+
+.ok{color:#7effb5;}
+.err{color:#ff6b6b;}
+
+.row{
+display:flex;
+flex-direction:column;
+gap:10px;
+align-items:center;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+width:100%;
+max-width:260px;
+margin:auto;
+margin-bottom:16px;
+}
+
+.cell{
+width:72px;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+border:1px solid rgba(0,255,153,.2);
+border-radius:8px;
+cursor:pointer;
+aspect-ratio:1/1;
+}
+
+.seq{
+display:flex;
+gap:8px;
+justify-content:center;
+margin-top:12px;
+flex-wrap:wrap;
+}
+
+.letter{
+padding:8px 10px;
+border:1px solid rgba(0,255,153,.2);
+border-radius:8px;
+cursor:pointer;
+background:transparent;
+user-select:none;
+font-size:14px;
+}
+
+#timer{
+top:8px;
+right:10px;
+font-size:14px;
+}
+
+.cell.active{
+background:#00ff99;
+color:#001010;
+}
+
+.portal{
+padding:10px 14px;
+border-radius:8px;
+border:1px solid rgba(0,255,153,.2);
+cursor:pointer;
+}
+
+.portal.locked{
+pointer-events:none;
+opacity:.4;
+}
+
+#timer{
+position:fixed;
+top:12px;
+right:18px;
+background:rgba(0,0,0,.25);
+padding:6px 8px;
+border-radius:6px;
+display:none;
+}
+
+.warning *{
+color:#ff4444 !important;
+}
+
+.qr{
+margin-top:20px;
+width:160px;
+height:160px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+#adminPanel{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:#000;
+border-top:2px solid #00ff99;
+padding:20px;
+display:none;
+max-height:40%;
+overflow:auto;
+}
+
+
+@media (max-width: 480px){
+
+.panel{
+padding:16px;
+}
+
+.card{
+padding:12px;
+}
+
+.seq{
+gap:6px;
+}
+
+.portal{
+width:100%;
+text-align:center;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+
+
+<div class="screen">
+
+<div id="timer">⏳ 5:00</div>
+
+<!-- PLAYER FORM -->
+
+<div id="panel-form" class="panel visible">
+<div class="card">
+
+<h1>CodeQuest: Digital Vault Escape</h1>
+
+<p>Enter your details before starting.</p>
+
+<div class="row">
+<input id="playerName" class="input" placeholder="Name">
+<input id="playerCourse" class="input" placeholder="Course">
+<input id="playerCollege" class="input" placeholder="College">
+<button class="btn" onclick="startGame()">Start</button>
+</div>
+
+</div>
+</div>
+
+<!-- INTRO -->
+
+<div id="panel-intro" class="panel">
+<div class="card">
+<div id="intro-text"></div>
+</div>
+</div>
+
+<!-- LEVEL 1 -->
+
+<div id="panel-1" class="panel">
+<div class="card">
+
+<h2>LEVEL 1 — THE THREE RIDDLES</h2>
+
+<div id="r1">
+
+<p><em>Riddle 1:</em> Programmers' haven, where software is woven. Debugger, editor, in one fold, this place is gold.</p>
+
+<input id="l1a" class="input">
+<button class="btn" onclick="checkR1()">Submit</button>
+<button class="btn" id="hint1" style="display:none" onclick="showHint(1)">Hint</button>
+
+<div id="fb1a" class="feedback"></div>
+
+</div>
+
+<div id="r2" style="display:none">
+
+<p><em>Riddle 2:</em> In queries I'm structured, I cannot lie; I talk to databases, never shy.</p>
+
+<input id="l1b" class="input">
+<button class="btn" onclick="checkR2()">Submit</button>
+<button class="btn" id="hint2" style="display:none" onclick="showHint(2)">Hint</button>
+
+<div id="fb1b" class="feedback"></div>
+
+</div>
+
+<div id="r3" style="display:none">
+
+<p><em>Riddle 3:</em> I'm not an insect, yet I sneak around and might make your program break down.</p>
+
+<input id="l1c" class="input">
+<button class="btn" onclick="checkR3()">Submit</button>
+<button class="btn" id="hint3" style="display:none" onclick="showHint(3)">Hint</button>
+
+<div id="fb1c" class="feedback"></div>
+
+</div>
+
+</div>
+</div>
+
+<!-- LEVEL 2 -->
+
+<div id="panel-2" class="panel">
+<div class="card">
+
+<h2>LEVEL 2 — DEBUG GRID</h2>
+
+<p>Analyze the code. The loop runs multiple times — mark that count on the grid.</p>
+<p style="font-size:12px; opacity:.7;">Tap cells to select/deselect</p>
+<pre>
 x = 0
 for i in range(3):
     x += 1
-print(x)</pre
-          >
-          <p>Select exactly that many cells below, then submit.</p>
-          <div id="grid" class="grid"></div>
-          <div class="row">
-            <button class="btn" onclick="submitGrid()">Submit</button>
-          </div>
-          <div id="fb2" class="feedback"></div>
-        </div>
-      </div>
+print(x)
+</pre>
 
-      <!-- LEVEL 3 -->
-      <div id="panel-3" class="panel">
-        <div class="card">
-          <h2>LEVEL 3 — ENCODED MESSAGE</h2>
-          <p>
-            Decode the message (each letter is shifted by +2). Type the decoded
-            phrase exactly.
-          </p>
-          <pre>VJG TGEQFG KU HTGG</pre>
-          <div class="row">
-            <input
-              id="input3"
-              class="input"
-              type="text"
-              placeholder="Type decoded phrase"
-            />
-            <button class="btn" onclick="checkLevel3()">Submit</button>
-          </div>
-          <div id="fb3" class="feedback"></div>
+<div id="grid" class="grid"></div>
 
-          <div id="scrambleWrap" style="margin-top: 14px; display: none">
+<button class="btn" onclick="submitGrid()">Submit</button>
+<button class="btn" id="hint4" style="display:none" onclick="showHint(4)">Hint</button>
+
+<div id="fb2" class="feedback"></div>
+
+</div>
+</div>
+
+<!-- LEVEL 3 -->
+
+<div id="panel-3" class="panel">
+<div class="card">
+
+<h2>LEVEL 3 — ENCODED MESSAGE</h2>
+
+<pre>VJG EQTF KU HTGG</pre>
+
+<input id="input3" class="input">
+<button class="btn" onclick="checkLevel3()">Submit</button>
+<button class="btn" id="hint5" style="display:none" onclick="showHint(5)">Hint</button>
+
+<div id="fb3" class="feedback"></div>
+<div id="scrambleWrap" style="margin-top: 14px; display: none">
             <p>
-              The final answer rhymes with the last letter, now rearrange the
+              The final answer rhymes with the last word, now rearrange the
               letters to get it:
             </p>
             <div id="seq" class="seq"></div>
@@ -439,229 +379,298 @@ print(x)</pre
               </button>
             </div>
             <div id="fb3b" class="feedback"></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- FINAL -->
-      <div id="panel-4" class="panel">
-        <div class="card">
-          <h2>FINAL — FIREWALL PORTALS</h2>
-          <p>
-            The vault shows three exit portals. Use the pattern from previous
-            levels to choose the correct one.<br />
-            <em>Be careful — a wrong choice may lock you here forever.</em>
-          </p>
-          <div class="row">
-            <div id="portal-1" class="portal" onclick="chooseFinal(1)">
-              Portal 1
-            </div>
-            <div id="portal-2" class="portal" onclick="chooseFinal(2)">
-              Portal 2
-            </div>
-            <div id="portal-3" class="portal" onclick="chooseFinal(3)">
-              Portal 3
-            </div>
-          </div>
-          <div id="fb4" class="feedback"></div>
-        </div>
-      </div>
+</div>
+</div>
+</div>
 
-      <!-- SUCCESS -->
-      <div id="panel-success" class="panel">
-        <div class="card">
-          <h2>ACCESS GRANTED</h2>
-          <p>🎉 You escaped the Digital Vault!</p>
-          <p>
-            Final code to submit in the Google Form: <strong>ESCAPE</strong>
-          </p>
-          <div class="qr">
-            <img src="qr1.png" alt="QR Code" />
-          </div>
-        </div>
-      </div>
+<!-- FINAL -->
 
-      <div id="flick" class="flick"></div>
-    </div>
+<div id="panel-4" class="panel">
+<div class="card">
 
-    <script>
-      const ANSWERS = {
-        l1a: "IDE",
-        l1b: "SQL",
-        l1c: "BUG",
-        l2_num: 3,
-        l3_phrase: "THE CODE IS FREE",
-        seqAnswer: ["T", "H", "R", "E", "E"],
-        final: 3,
-      };
+<h2>FINAL — FIREWALL PORTALS</h2>
+<p>Your previous answers hold the key. Choose the correct portal.</p>
+<div class="row">
 
-      // Audio beep setup
-      const beep = new AudioContext();
-      function playBeep(freq = 440, dur = 0.1) {
-        const osc = beep.createOscillator();
-        const gain = beep.createGain();
-        osc.type = "square";
-        osc.frequency.value = freq;
-        osc.connect(gain);
-        gain.connect(beep.destination);
-        osc.start();
-        osc.stop(beep.currentTime + dur);
-      }
+<div id="portal-1" class="portal" onclick="chooseFinal(1)">Portal 1</div>
+<div id="portal-2" class="portal" onclick="chooseFinal(2)">Portal 2</div>
+<div id="portal-3" class="portal" onclick="chooseFinal(3)">Portal 3</div>
 
-      // Timer logic with warnings
-      let timerSeconds = 15 * 60,
-        timerInterval = null;
-      function startTimer() {
-        const el = document.getElementById("timer");
-        el.style.display = "block";
-        el.textContent = "⏳ " + format(timerSeconds);
-        timerInterval = setInterval(() => {
-          timerSeconds--;
-          el.textContent = "⏳ " + format(timerSeconds);
+</div>
 
-          // Warning styles
-          if (timerSeconds <= 60) el.classList.add("warning");
+<div id="fb4" class="feedback"></div>
 
-          // Beeps for last 10 sec
-          if (timerSeconds <= 10 && timerSeconds > 0) playBeep(800, 0.1);
+</div>
+</div>
 
-          // Alerts
-          if (timerSeconds === 180)
-            alert("⚠️ SYSTEM ALERT: Vault integrity dropping...");
-          if (timerSeconds === 60) alert("⚠️ CORE BREACH IMMINENT. HURRY!");
-          if (timerSeconds === 20) alert("🔥 SYSTEM COLLAPSE INCOMING!");
+<!-- SUCCESS -->
 
-          if (timerSeconds < 0) {
-            clearInterval(timerInterval);
-            alert("Time's up!");
-            location.reload();
-          }
-        }, 1000);
-      }
-      function format(s) {
-        const m = Math.floor(s / 60)
-            .toString()
-            .padStart(2, "0"),
-          sec = (s % 60).toString().padStart(2, "0");
-        return `${m}:${sec}`;
-      }
+<div id="panel-success" class="panel">
+<div class="card">
 
-      // Typewriter intro
-      const intro =
-        "SYSTEM BOOTING...\nUNAUTHORIZED ACCESS DETECTED.\nYou are trapped inside the Digital Vault.\nSolve the puzzles to escape.\nCollect hints from each level — they’ll guide your final choice.\nYou’ll only get ONE chance at the end. Choose wisely.";
-      let pos = 0;
-      function typeIntro() {
-        const el = document.getElementById("intro-text");
-        if (pos < intro.length) {
-          el.innerHTML += intro[pos] === "\n" ? "<br>" : intro[pos];
-          pos++;
-          setTimeout(typeIntro, 30);
-        } else
-          setTimeout(() => {
-            doFlicker(() => {
-              showPanel(1);
-              startTimer();
-            });
-          }, 700);
-      }
+<h2>ACCESS GRANTED</h2>
 
-      // Flicker function
-      function doFlicker(next) {
-        const f = document.getElementById("flick");
-        f.style.opacity = "0.95";
-        setTimeout(() => (f.style.opacity = "0"), 260);
-        setTimeout(() => next && next(), 300);
-      }
+<p>You escaped the vault.</p>
 
-      // Panel helper
-      function showPanel(k) {
-        document
-          .querySelectorAll(".panel")
-          .forEach((p) => p.classList.remove("visible"));
-        document.getElementById("panel-" + k).classList.add("visible");
-      }
+<p>Final Code: <strong>ESCAPE</strong></p>
 
-      // Normalize input
-      function norm(s) {
-        return (s || "").trim().toUpperCase();
-      }
+<p>Take a screenshot and submit it via the Google Form after entering the keyword “ESCAPE.” <br> Your result will be verified based on this screenshot.</p>
 
-      // Level checkers, grid, scramble, final logic remain same as original
-      // Call playBeep() on wrong answers if you want extra tension
 
-      // Level 1 progressive riddles
-      function checkR1() {
-        const fb = document.getElementById("fb1a");
-        if (norm(l1a.value) === ANSWERS.l1a) {
-          fb.textContent = "Correct! Next riddle unlocked.";
-          fb.className = "feedback ok";
-          document.getElementById("r2").style.display = "block";
-        } else {
-          fb.textContent = "Try again.";
-          fb.className = "feedback err";
-        }
-      }
-      function checkR2() {
-        const fb = document.getElementById("fb1b");
-        if (norm(l1b.value) === ANSWERS.l1b) {
-          fb.textContent = "Good! Last riddle unlocked.";
-          fb.className = "feedback ok";
-          document.getElementById("r3").style.display = "block";
-        } else {
-          fb.textContent = "Incorrect.";
-          fb.className = "feedback err";
-        }
-      }
-      function checkR3() {
-        const fb = document.getElementById("fb1c");
-        if (norm(l1c.value) === ANSWERS.l1c) {
-          fb.textContent = "All correct — gate unlocking...";
-          fb.className = "feedback ok";
-          doFlicker(() => showPanel(2));
-        } else {
-          fb.textContent = "Nope, try again.";
-          fb.className = "feedback err";
-        }
-      }
+</div>
+</div>
 
-      function buildGrid() {
-        const g = document.getElementById("grid");
-        g.innerHTML = "";
-        for (let i = 1; i <= 9; i++) {
-          const c = document.createElement("div");
-          c.className = "cell";
-          c.textContent = i;
-          c.onclick = () => c.classList.toggle("active");
-          g.appendChild(c);
-        }
-      }
-      function submitGrid() {
-        const fb = document.getElementById("fb2");
-        const count = [...document.querySelectorAll(".cell.active")].length;
-        if (count === ANSWERS.l2_num) {
-          fb.textContent = "Correct — grid unlocked.";
-          fb.className = "feedback ok";
-          doFlicker(() => showPanel(3));
-        } else {
-          fb.textContent = `Select exactly ${ANSWERS.l2_num} cells.`;
-          fb.className = "feedback err";
-        }
-      }
+</div>
 
-      function checkLevel3() {
-        const v = norm(input3.value);
-        const fb = document.getElementById("fb3");
-        if (v === ANSWERS.l3_phrase) {
-          fb.textContent = "Decoded correctly. Proceed...";
-          fb.className = "feedback ok";
-          document.getElementById("scrambleWrap").style.display = "block";
-          buildScramble();
-        } else {
-          fb.textContent = "Incorrect decoding.";
-          fb.className = "feedback err";
-        }
-      }
-      function buildScramble() {
+<div id="adminPanel"></div>
+
+<script>
+
+const ANSWERS={
+l1a:"IDE",
+l1b:"SQL",
+l1c:"BUG",
+l2:3,
+l3:"THE CODE IS FREE",
+final:3
+}
+
+let player={}
+let startTime=0
+let endTime=0
+let timer=300
+let timerInterval
+let finalChosen=false
+let score=0
+
+let wrongAttempts={1:0,2:0,3:0,4:0,5:0}
+
+function showPanel(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("visible"))
+
+  const next = document.getElementById("panel-"+id)
+
+  if(next){
+    next.classList.add("visible")
+  } else {
+    console.error("❌ Panel not found:", "panel-"+id)
+  }
+}
+function startGame(){
+
+if(sessionStorage.getItem("played")){
+alert("You already attempted the vault.")
+return
+}
+
+player.name=playerName.value
+player.course=playerCourse.value
+player.college=playerCollege.value
+
+if(!player.name||!player.course||!player.college){
+alert("Fill all fields")
+return
+}
+
+sessionStorage.setItem("played","true")
+
+startTime=Date.now()
+
+showPanel("intro")
+
+typeIntro()
+
+}
+
+const introText=
+"SYSTEM BOOTING...\n" +
+"FIREWALL LAYERS DETECTED...\n" +
+"VAULT SECURITY ACTIVE...\n\n" +
+"To escape the digital vault you must:\n" +
+"solve the puzzles\n" +
+"break the encryption\n" +
+"choose the correct portal\n\n" +
+"You have 5 minutes.\n\n" +
+"GOOD LUCK, HACKER."
+
+let pos=0
+
+function typeIntro(){
+
+const el=document.getElementById("intro-text")
+
+if(pos<introText.length){
+
+el.innerHTML+=introText[pos]=="\n"?"<br>":introText[pos]
+pos++
+
+setTimeout(typeIntro,30)
+
+}else{
+
+setTimeout(()=>{
+showPanel("1")
+startTimer()
+},1000)
+
+}
+
+}
+
+function startTimer(){
+
+const el=document.getElementById("timer")
+el.style.display="block"
+
+timerInterval=setInterval(()=>{
+
+timer--
+
+el.textContent="⏳ "+format(timer)
+
+if(timer===180) alert("⚠ Vault integrity dropping")
+
+if(timer===60){
+alert("⚠ CORE BREACH IMMINENT")
+document.body.classList.add("warning")
+}
+
+if(timer===20) alert("🔥 SYSTEM COLLAPSE INCOMING")
+
+if(timer<=10 && timer>0) beep()
+
+if(timer<=0){
+
+clearInterval(timerInterval)
+
+saveResult("TIMEOUT")
+
+showPanel("success")
+
+document.querySelector("#panel-success .card").innerHTML=`
+<h2>SYSTEM LOCKDOWN</h2>
+
+<p>The firewall rebuilt itself.</p>
+
+<p>You ran out of time.</p>
+
+<p>MISSION FAILED</p>
+
+<p>📸 TAKE A SCREENSHOT</p>
+`
+
+}
+
+},1000)
+
+}
+
+function format(s){
+const m=Math.floor(s/60).toString().padStart(2,"0")
+const sec=(s%60).toString().padStart(2,"0")
+return m+":"+sec
+}
+
+function norm(s){
+return (s||"").trim().toUpperCase()
+}
+
+function checkR1(){
+
+if(norm(l1a.value)==ANSWERS.l1a){
+score+=10
+fb1a.textContent="Correct"
+fb1a.className="feedback ok"
+r2.style.display="block"
+}else{
+wrongAttempts[1]++
+fb1a.textContent="Try again"
+if(wrongAttempts[1]>=2) hint1.style.display="inline-block"
+}
+}
+
+function checkR2(){
+
+if(norm(l1b.value)==ANSWERS.l1b){
+score+=10
+fb1b.textContent="Correct"
+fb1b.className="feedback ok"
+r3.style.display="block"
+}else{
+wrongAttempts[2]++
+if(wrongAttempts[2]>=2) hint2.style.display="inline-block"
+}
+}
+
+function checkR3(){
+
+if(norm(l1c.value)==ANSWERS.l1c){
+score+=10
+showPanel("2")
+}else{
+wrongAttempts[3]++
+if(wrongAttempts[3]>=2) hint3.style.display="inline-block"
+}
+}
+
+function buildGrid(){
+
+const g=document.getElementById("grid")
+
+for(let i=1;i<=9;i++){
+
+const c=document.createElement("div")
+
+c.className="cell"
+c.onclick=()=>c.classList.toggle("active")
+
+g.appendChild(c)
+
+}
+
+}
+
+function submitGrid(){
+
+const count=[...document.querySelectorAll(".cell.active")].length
+
+if(count==ANSWERS.l2){
+score+=20
+showPanel("3")
+}else{
+wrongAttempts[4]++
+if(wrongAttempts[4]>=2) hint4.style.display="inline-block"
+}
+
+}
+
+function checkLevel3(){
+
+if(norm(input3.value)==ANSWERS.l3){
+
+score+=20
+
+fb3.textContent="Decoded correctly. Now complete the final step."
+fb3.className="feedback ok"
+
+// 👇 SHOW SCRAMBLE
+document.getElementById("scrambleWrap").style.display="block"
+
+// 👇 BUILD LETTERS
+buildScramble()
+
+}else{
+
+wrongAttempts[5]++
+fb3.textContent="Incorrect decoding"
+
+if(wrongAttempts[5]>=2) hint5.style.display="inline-block"
+
+}
+}
+
+function buildScramble() {
         const seq = document.getElementById("seq");
         seq.innerHTML = "";
         const letters = ["E", "H", "T", "R", "E"];
@@ -691,40 +700,149 @@ print(x)</pre
           a.style.outline = "";
           window.first = null;
         }
-      }
-      function submitSequence() {
-        const fb = document.getElementById("fb3b");
-        const seq = [...document.querySelectorAll("#seq .letter")].map(
-          (x) => x.textContent
-        );
-        if (JSON.stringify(seq) === JSON.stringify(ANSWERS.seqAnswer)) {
-          fb.textContent = "Correct — final hint unlocked.";
-          fb.className = "feedback ok";
-          doFlicker(() => showPanel(4));
-        } else {
-          fb.textContent = "Not quite right. Try again.";
-          fb.className = "feedback err";
-        }
-      }
 
-      function chooseFinal(i) {
-        const fb = document.getElementById("fb4");
-        if (i === ANSWERS.final) {
-          fb.textContent = "Correct portal. Escaping...";
-          fb.className = "feedback ok";
-          clearInterval(timerInterval);
-          doFlicker(() => showPanel("success"));
-        } else {
-          fb.textContent = "Wrong portal. You’re trapped.";
-          fb.className = "feedback err";
-        }
-      }
+    }
 
-      function init() {
-        buildGrid();
-        typeIntro();
-      }
-      init();
-    </script>
-  </body>
+    function submitSequence(){
+
+const fb = document.getElementById("fb3b");
+
+const seq = [...document.querySelectorAll("#seq .letter")].map(x => x.textContent);
+
+const correct = ["T","H","R","E","E"];
+
+if(JSON.stringify(seq) === JSON.stringify(correct)){
+
+fb.textContent="Correct — final unlocked!"
+fb.className="feedback ok"
+
+setTimeout(()=>showPanel("4"),800)
+
+}else{
+
+fb.textContent="Wrong order. Try again."
+fb.className="feedback err"
+
+}
+
+}
+function chooseFinal(i){
+
+if(finalChosen)return
+
+finalChosen=true
+
+clearInterval(timerInterval)
+
+document.querySelectorAll(".portal").forEach(p=>p.classList.add("locked"))
+
+if(i==ANSWERS.final){
+
+score+=30
+
+fb4.textContent="Correct portal. 📸 TAKE A SCREENSHOT"
+
+saveResult("WIN")
+
+setTimeout(()=>showPanel("success"),1500)
+
+}else{
+
+fb4.textContent="Wrong portal. 📸 TAKE A SCREENSHOT"
+
+saveResult("LOSE")
+
+}
+
+}
+
+function saveResult(result){
+
+endTime=Date.now()
+
+const timeTaken=Math.floor((endTime-startTime)/1000)
+
+const record={
+name:player.name,
+course:player.course,
+college:player.college,
+start:startTime,
+end:endTime,
+time:timeTaken,
+score:score,
+result:result
+}
+
+let board=JSON.parse(localStorage.getItem("codequestLeaderboard")||"[]")
+
+board.push(record)
+
+localStorage.setItem("codequestLeaderboard",JSON.stringify(board))
+
+}
+
+function showHint(n){
+
+const hints={
+1:"Development environment",
+2:"Database language",
+3:"Programming error",
+4:"Count loop iterations",
+5:"Caesar cipher shift +2"
+}
+
+alert("Hint: "+hints[n])
+
+}
+
+function beep(){
+
+const ctx=new AudioContext()
+
+const osc=ctx.createOscillator()
+
+osc.frequency.value=800
+
+osc.connect(ctx.destination)
+
+osc.start()
+
+osc.stop(ctx.currentTime+.1)
+
+}
+
+document.addEventListener("keydown",e=>{
+
+if(e.ctrlKey && e.shiftKey && e.key==="L"){
+
+const board=JSON.parse(localStorage.getItem("codequestLeaderboard")||"[]")
+
+adminPanel.style.display="block"
+
+board.sort((a,b)=>a.time-b.time)
+
+let html="<h2>Leaderboard (Fastest First)</h2>"
+
+board.forEach((p,i)=>{
+
+html+=`
+<div>
+${i+1}. ${p.name} | ${p.college} | ${p.time}s | ${p.result}
+</div>
+`
+
+})
+
+adminPanel.innerHTML=html
+
+}
+
+})
+
+
+buildGrid()
+
+</script>
+
+</body>
 </html>

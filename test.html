@@ -1,295 +1,848 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeQuest Terminal</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CodeQuest — Digital Vault Escape</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+
 <style>
-  body {
-    margin: 0;
-    background-color: #000;
-    color: #0f0;
-    font-family: 'Courier New', monospace;
-    overflow: hidden;
-  }
-  .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    text-align: center;
-    flex-direction: column;
-  }
-  .hidden {
-    display: none;
-  }
-  input, button {
-    background: #000;
-    color: #0f0;
-    border: 1px solid #0f0;
-    padding: 5px 10px;
-    margin-top: 10px;
-    font-family: 'Courier New', monospace;
-  }
-  .feedback {
-    margin-top: 10px;
-    font-style: italic;
-  }
-  .error { color: red; }
-  .success { color: lime; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 60px);
-    grid-gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  .cell {
-    width: 60px;
-    height: 60px;
-    border: 1px solid #0f0;
-    cursor: pointer;
-  }
-  .active {
-    background: #0f0;
-  }
-  .portal-btn {
-    margin: 10px;
-    padding: 15px 25px;
-    border: 1px solid #0f0;
-    cursor: pointer;
-  }
-  .flicker {
-    animation: flicker 1s linear infinite alternate;
-  }
-  @keyframes flicker {
-    from { opacity: 1; }
-    to { opacity: 0.7; }
-  }
+
+html,body{
+height:100%;
+margin:0;
+font-family:"Fira Code",monospace;
+background:#020202;
+color:#00ff99;
+overflow:auto;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:0;
+}
+
+.screen{
+height:100%;
+width:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+z-index:2;
+}
+
+.panel{
+position:absolute;
+inset:0;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+padding:24px;
+box-sizing:border-box;
+opacity:0;
+pointer-events:none;
+transform:scale(.98);
+transition:.35s;
+}
+
+.panel.visible{
+opacity:1;
+pointer-events:auto;
+transform:scale(1);
+}
+
+.card{
+width:92%;
+max-width:900px;
+background:rgba(0,0,0,.55);
+border:1px solid rgba(0,255,153,.15);
+padding:14px;
+border-radius:10px;
+}
+
+h1,h2{
+color:#7af0c5;
+}
+
+h1{
+font-size:clamp(20px,5vw,28px);
+}
+
+h2{
+font-size:clamp(16px,4.5vw,22px);
+}
+
+p{
+font-size:clamp(13px,3.5vw,16px);
+}
+
+.input, .btn{
+width:100%;
+max-width:300px;
+}
+
+.input{
+background:transparent;
+border:1px solid rgba(0,255,153,.3);
+color:#00ff99;
+padding:8px;
+border-radius:6px;
+margin-top:10px;
+}
+
+.btn{
+background:#00ff99;
+border:none;
+padding:12px;      /* 👈 BIGGER for touch */
+border-radius:6px;
+cursor:pointer;
+margin-top:10px;   /* 👈 ADD */
+width:100%;        /* 👈 MOBILE FRIENDLY */
+max-width:320px;
+}
+
+.feedback{
+margin-top:10px;
+font-weight:700;
+min-height:20px;
+}
+
+.ok{color:#7effb5;}
+.err{color:#ff6b6b;}
+
+.row{
+display:flex;
+flex-direction:column;
+gap:10px;
+align-items:center;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+width:100%;
+max-width:260px;
+margin:auto;
+margin-bottom:16px;
+}
+
+.cell{
+width:72px;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+border:1px solid rgba(0,255,153,.2);
+border-radius:8px;
+cursor:pointer;
+aspect-ratio:1/1;
+}
+
+.seq{
+display:flex;
+gap:8px;
+justify-content:center;
+margin-top:12px;
+flex-wrap:wrap;
+}
+
+.letter{
+padding:8px 10px;
+border:1px solid rgba(0,255,153,.2);
+border-radius:8px;
+cursor:pointer;
+background:transparent;
+user-select:none;
+font-size:14px;
+}
+
+#timer{
+top:8px;
+right:10px;
+font-size:14px;
+}
+
+.cell.active{
+background:#00ff99;
+color:#001010;
+}
+
+.portal{
+padding:10px 14px;
+border-radius:8px;
+border:1px solid rgba(0,255,153,.2);
+cursor:pointer;
+}
+
+.portal.locked{
+pointer-events:none;
+opacity:.4;
+}
+
+#timer{
+position:fixed;
+top:12px;
+right:18px;
+background:rgba(0,0,0,.25);
+padding:6px 8px;
+border-radius:6px;
+display:none;
+}
+
+.warning *{
+color:#ff4444 !important;
+}
+
+.qr{
+margin-top:20px;
+width:160px;
+height:160px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+#adminPanel{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:#000;
+border-top:2px solid #00ff99;
+padding:20px;
+display:none;
+max-height:40%;
+overflow:auto;
+}
+
+
+@media (max-width: 480px){
+
+.panel{
+padding:16px;
+}
+
+.card{
+padding:12px;
+}
+
+.seq{
+gap:6px;
+}
+
+.portal{
+width:100%;
+text-align:center;
+}
+
+}
 </style>
 </head>
+
 <body>
-<div id="screen" class="center"></div>
+
+
+
+<div class="screen">
+
+<div id="timer">⏳ 5:00</div>
+
+<!-- PLAYER FORM -->
+
+<div id="panel-form" class="panel visible">
+<div class="card">
+
+<h1>CodeQuest: Digital Vault Escape</h1>
+
+<p>Enter your details before starting.</p>
+
+<div class="row">
+<input id="playerName" class="input" placeholder="Name">
+<input id="playerCourse" class="input" placeholder="Course">
+<input id="playerCollege" class="input" placeholder="College">
+<button class="btn" onclick="startGame()">Start</button>
+</div>
+
+</div>
+</div>
+
+<!-- INTRO -->
+
+<div id="panel-intro" class="panel">
+<div class="card">
+<div id="intro-text"></div>
+</div>
+</div>
+
+<!-- LEVEL 1 -->
+
+<div id="panel-1" class="panel">
+<div class="card">
+
+<h2>LEVEL 1 — THE THREE RIDDLES</h2>
+
+<div id="r1">
+
+<p><em>Riddle 1:</em> Programmers' haven, where software is woven. Debugger, editor, in one fold, this place is gold.</p>
+
+<input id="l1a" class="input">
+<button class="btn" onclick="checkR1()">Submit</button>
+<button class="btn" id="hint1" style="display:none" onclick="showHint(1)">Hint</button>
+
+<div id="fb1a" class="feedback"></div>
+
+</div>
+
+<div id="r2" style="display:none">
+
+<p><em>Riddle 2:</em> In queries I'm structured, I cannot lie; I talk to databases, never shy.</p>
+
+<input id="l1b" class="input">
+<button class="btn" onclick="checkR2()">Submit</button>
+<button class="btn" id="hint2" style="display:none" onclick="showHint(2)">Hint</button>
+
+<div id="fb1b" class="feedback"></div>
+
+</div>
+
+<div id="r3" style="display:none">
+
+<p><em>Riddle 3:</em> I'm not an insect, yet I sneak around and might make your program break down.</p>
+
+<input id="l1c" class="input">
+<button class="btn" onclick="checkR3()">Submit</button>
+<button class="btn" id="hint3" style="display:none" onclick="showHint(3)">Hint</button>
+
+<div id="fb1c" class="feedback"></div>
+
+</div>
+
+</div>
+</div>
+
+<!-- LEVEL 2 -->
+
+<div id="panel-2" class="panel">
+<div class="card">
+
+<h2>LEVEL 2 — DEBUG GRID</h2>
+
+<p>Analyze the code. The loop runs multiple times — mark that count on the grid.</p>
+<p style="font-size:12px; opacity:.7;">Tap cells to select/deselect</p>
+<pre>
+x = 0
+for i in range(3):
+    x += 1
+print(x)
+</pre>
+
+<div id="grid" class="grid"></div>
+
+<button class="btn" onclick="submitGrid()">Submit</button>
+<button class="btn" id="hint4" style="display:none" onclick="showHint(4)">Hint</button>
+
+<div id="fb2" class="feedback"></div>
+
+</div>
+</div>
+
+<!-- LEVEL 3 -->
+
+<div id="panel-3" class="panel">
+<div class="card">
+
+<h2>LEVEL 3 — ENCODED MESSAGE</h2>
+
+<pre>VJG EQTF KU HTGG</pre>
+
+<input id="input3" class="input">
+<button class="btn" onclick="checkLevel3()">Submit</button>
+<button class="btn" id="hint5" style="display:none" onclick="showHint(5)">Hint</button>
+
+<div id="fb3" class="feedback"></div>
+<div id="scrambleWrap" style="margin-top: 14px; display: none">
+            <p>
+              The final answer rhymes with the last word, now rearrange the
+              letters to get it:
+            </p>
+            <div id="seq" class="seq"></div>
+            <div class="row" style="margin-top: 12px">
+              <button class="btn" onclick="submitSequence()">
+                Submit Sequence
+              </button>
+            </div>
+            <div id="fb3b" class="feedback"></div>
+
+</div>
+</div>
+</div>
+
+<!-- FINAL -->
+
+<div id="panel-4" class="panel">
+<div class="card">
+
+<h2>FINAL — FIREWALL PORTALS</h2>
+<p>Your previous answers hold the key. Choose the correct portal.</p>
+<div class="row">
+
+<div id="portal-1" class="portal" onclick="chooseFinal(1)">Portal 1</div>
+<div id="portal-2" class="portal" onclick="chooseFinal(2)">Portal 2</div>
+<div id="portal-3" class="portal" onclick="chooseFinal(3)">Portal 3</div>
+
+</div>
+
+<div id="fb4" class="feedback"></div>
+
+</div>
+</div>
+
+<!-- SUCCESS -->
+
+<div id="panel-success" class="panel">
+<div class="card">
+
+<h2>ACCESS GRANTED</h2>
+
+<p>You escaped the vault.</p>
+
+<p>Final Code: <strong>ESCAPE</strong></p>
+
+<p>Take a screenshot and submit it via the Google Form after entering the keyword “ESCAPE.” <br> Your result will be verified based on this screenshot.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="adminPanel"></div>
 
 <script>
-const screen = document.getElementById("screen");
 
-function typeText(text, callback) {
-  let i = 0;
-  screen.innerHTML = "";
-  const interval = setInterval(() => {
-    screen.innerHTML = text.substring(0, i);
-    i++;
-    if (i > text.length) {
-      clearInterval(interval);
-      if (callback) setTimeout(callback, 500);
-    }
-  }, 40);
+const ANSWERS={
+l1a:"IDE",
+l1b:"SQL",
+l1c:"BUG",
+l2:3,
+l3:"THE CODE IS FREE",
+final:3
 }
 
-function fadeTransition(nextFn) {
-  screen.classList.add("flicker");
-  setTimeout(() => {
-    screen.classList.remove("flicker");
-    nextFn();
-  }, 800);
+let player={}
+let startTime=0
+let endTime=0
+let timer=300
+let timerInterval
+let finalChosen=false
+let score=0
+
+let wrongAttempts={1:0,2:0,3:0,4:0,5:0}
+
+function showPanel(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("visible"))
+
+  const next = document.getElementById("panel-"+id)
+
+  if(next){
+    next.classList.add("visible")
+  } else {
+    console.error("❌ Panel not found:", "panel-"+id)
+  }
+}
+function startGame(){
+
+if(sessionStorage.getItem("played")){
+alert("You already attempted the vault.")
+return
 }
 
-// ----- INTRO -----
-function intro() {
-  typeText(">> SYSTEM REBOOTING...\n\nYou awaken in a dark virtual chamber.\nYou are trapped inside CodeQuest.\nSolve the riddles to unlock the exit.\nEach answer will lead you closer to freedom.\n\nChoose wisely — only ONE portal leads out...\n\nPress ENTER to begin.", () => {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.removeEventListener("keydown", this);
-        fadeTransition(level1_riddle1);
+player.name=playerName.value
+player.course=playerCourse.value
+player.college=playerCollege.value
+
+if(!player.name||!player.course||!player.college){
+alert("Fill all fields")
+return
+}
+
+sessionStorage.setItem("played","true")
+
+startTime=Date.now()
+
+showPanel("intro")
+
+typeIntro()
+
+}
+
+const introText=
+"SYSTEM BOOTING...\n" +
+"FIREWALL LAYERS DETECTED...\n" +
+"VAULT SECURITY ACTIVE...\n\n" +
+"To escape the digital vault you must:\n" +
+"solve the puzzles\n" +
+"break the encryption\n" +
+"choose the correct portal\n\n" +
+"You have 5 minutes.\n\n" +
+"GOOD LUCK, HACKER."
+
+let pos=0
+
+function typeIntro(){
+
+const el=document.getElementById("intro-text")
+
+if(pos<introText.length){
+
+el.innerHTML+=introText[pos]=="\n"?"<br>":introText[pos]
+pos++
+
+setTimeout(typeIntro,30)
+
+}else{
+
+setTimeout(()=>{
+showPanel("1")
+startTimer()
+},1000)
+
+}
+
+}
+
+function startTimer(){
+
+const el=document.getElementById("timer")
+el.style.display="block"
+
+timerInterval=setInterval(()=>{
+
+timer--
+
+el.textContent="⏳ "+format(timer)
+
+if(timer===180) alert("⚠ Vault integrity dropping")
+
+if(timer===60){
+alert("⚠ CORE BREACH IMMINENT")
+document.body.classList.add("warning")
+}
+
+if(timer===20) alert("🔥 SYSTEM COLLAPSE INCOMING")
+
+if(timer<=10 && timer>0) beep()
+
+if(timer<=0){
+
+clearInterval(timerInterval)
+
+saveResult("TIMEOUT")
+
+showPanel("success")
+
+document.querySelector("#panel-success .card").innerHTML=`
+<h2>SYSTEM LOCKDOWN</h2>
+
+<p>The firewall rebuilt itself.</p>
+
+<p>You ran out of time.</p>
+
+<p>MISSION FAILED</p>
+
+<p>📸 TAKE A SCREENSHOT</p>
+`
+
+}
+
+},1000)
+
+}
+
+function format(s){
+const m=Math.floor(s/60).toString().padStart(2,"0")
+const sec=(s%60).toString().padStart(2,"0")
+return m+":"+sec
+}
+
+function norm(s){
+return (s||"").trim().toUpperCase()
+}
+
+function checkR1(){
+
+if(norm(l1a.value)==ANSWERS.l1a){
+score+=10
+fb1a.textContent="Correct"
+fb1a.className="feedback ok"
+r2.style.display="block"
+}else{
+wrongAttempts[1]++
+fb1a.textContent="Try again"
+if(wrongAttempts[1]>=2) hint1.style.display="inline-block"
+}
+}
+
+function checkR2(){
+
+if(norm(l1b.value)==ANSWERS.l1b){
+score+=10
+fb1b.textContent="Correct"
+fb1b.className="feedback ok"
+r3.style.display="block"
+}else{
+wrongAttempts[2]++
+if(wrongAttempts[2]>=2) hint2.style.display="inline-block"
+}
+}
+
+function checkR3(){
+
+if(norm(l1c.value)==ANSWERS.l1c){
+score+=10
+showPanel("2")
+}else{
+wrongAttempts[3]++
+if(wrongAttempts[3]>=2) hint3.style.display="inline-block"
+}
+}
+
+function buildGrid(){
+
+const g=document.getElementById("grid")
+
+for(let i=1;i<=9;i++){
+
+const c=document.createElement("div")
+
+c.className="cell"
+c.onclick=()=>c.classList.toggle("active")
+
+g.appendChild(c)
+
+}
+
+}
+
+function submitGrid(){
+
+const count=[...document.querySelectorAll(".cell.active")].length
+
+if(count==ANSWERS.l2){
+score+=20
+showPanel("3")
+}else{
+wrongAttempts[4]++
+if(wrongAttempts[4]>=2) hint4.style.display="inline-block"
+}
+
+}
+
+function checkLevel3(){
+
+if(norm(input3.value)==ANSWERS.l3){
+
+score+=20
+
+fb3.textContent="Decoded correctly. Now complete the final step."
+fb3.className="feedback ok"
+
+// 👇 SHOW SCRAMBLE
+document.getElementById("scrambleWrap").style.display="block"
+
+// 👇 BUILD LETTERS
+buildScramble()
+
+}else{
+
+wrongAttempts[5]++
+fb3.textContent="Incorrect decoding"
+
+if(wrongAttempts[5]>=2) hint5.style.display="inline-block"
+
+}
+}
+
+function buildScramble() {
+        const seq = document.getElementById("seq");
+        seq.innerHTML = "";
+        const letters = ["E", "H", "T", "R", "E"];
+        letters.forEach((l) => {
+          const el = document.createElement("div");
+          el.className = "letter";
+          el.textContent = l;
+          el.onclick = scrambleClick;
+          seq.appendChild(el);
+        });
+        window.first = null;
       }
-    });
-  });
+      function scrambleClick(e) {
+        const el = e.currentTarget;
+        if (!window.first) {
+          window.first = el;
+          el.style.outline = "2px solid rgba(0,255,153,0.45)";
+        } else if (window.first === el) {
+          el.style.outline = "";
+          window.first = null;
+        } else {
+          const a = window.first,
+            b = el,
+            t = a.textContent;
+          a.textContent = b.textContent;
+          b.textContent = t;
+          a.style.outline = "";
+          window.first = null;
+        }
+
+    }
+
+    function submitSequence(){
+
+const fb = document.getElementById("fb3b");
+
+const seq = [...document.querySelectorAll("#seq .letter")].map(x => x.textContent);
+
+const correct = ["T","H","R","E","E"];
+
+if(JSON.stringify(seq) === JSON.stringify(correct)){
+
+fb.textContent="Correct — final unlocked!"
+fb.className="feedback ok"
+
+setTimeout(()=>showPanel("4"),800)
+
+}else{
+
+fb.textContent="Wrong order. Try again."
+fb.className="feedback err"
+
 }
 
-// ----- LEVEL 1 -----
-function level1_riddle1() {
-  screen.innerHTML = `
-    <h2>LEVEL 1 — THE THREE RIDDLES</h2>
-    <p>Riddle 1:<br>Programmers' haven, where software is woven.<br>Debugger, editor, in one fold, this place is gold.<br><br>What am I?</p>
-    <input id="ans1" placeholder="Your answer">
-    <button onclick="checkRiddle1()">Submit</button>
-    <div id="feedback1" class="feedback"></div>
-  `;
+}
+function chooseFinal(i){
+
+if(finalChosen)return
+
+finalChosen=true
+
+clearInterval(timerInterval)
+
+document.querySelectorAll(".portal").forEach(p=>p.classList.add("locked"))
+
+if(i==ANSWERS.final){
+
+score+=30
+
+fb4.textContent="Correct portal. 📸 TAKE A SCREENSHOT"
+
+saveResult("WIN")
+
+setTimeout(()=>showPanel("success"),1500)
+
+}else{
+
+fb4.textContent="Wrong portal. 📸 TAKE A SCREENSHOT"
+
+saveResult("LOSE")
+
 }
 
-function checkRiddle1() {
-  const ans = document.getElementById("ans1").value.trim().toUpperCase();
-  const f = document.getElementById("feedback1");
-  if (ans === "IDE") {
-    f.className = "feedback success";
-    f.textContent = "Correct! Moving to next riddle...";
-    fadeTransition(level1_riddle2);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "Wrong! Try again.";
-  }
 }
 
-function level1_riddle2() {
-  screen.innerHTML = `
-    <h2>LEVEL 1 — RIDDLE 2</h2>
-    <p>In queries I'm structured, I cannot lie;<br>I talk to databases, never shy.<br><br>What am I?</p>
-    <input id="ans2" placeholder="Your answer">
-    <button onclick="checkRiddle2()">Submit</button>
-    <div id="feedback2" class="feedback"></div>
-  `;
+function saveResult(result){
+
+endTime=Date.now()
+
+const timeTaken=Math.floor((endTime-startTime)/1000)
+
+const record={
+name:player.name,
+course:player.course,
+college:player.college,
+start:startTime,
+end:endTime,
+time:timeTaken,
+score:score,
+result:result
 }
 
-function checkRiddle2() {
-  const ans = document.getElementById("ans2").value.trim().toUpperCase();
-  const f = document.getElementById("feedback2");
-  if (ans === "SQL") {
-    f.className = "feedback success";
-    f.textContent = "Correct! Final riddle coming up...";
-    fadeTransition(level1_riddle3);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "Wrong! Try again.";
-  }
+let board=JSON.parse(localStorage.getItem("codequestLeaderboard")||"[]")
+
+board.push(record)
+
+localStorage.setItem("codequestLeaderboard",JSON.stringify(board))
+
 }
 
-function level1_riddle3() {
-  screen.innerHTML = `
-    <h2>LEVEL 1 — RIDDLE 3</h2>
-    <p>I'm not an insect, yet I sneak around<br>and might make your program break down.<br><br>What am I?</p>
-    <input id="ans3" placeholder="Your answer">
-    <button onclick="checkRiddle3()">Submit</button>
-    <div id="feedback3" class="feedback"></div>
-  `;
+function showHint(n){
+
+const hints={
+1:"Development environment",
+2:"Database language",
+3:"Programming error",
+4:"Count loop iterations",
+5:"Caesar cipher shift +2"
 }
 
-function checkRiddle3() {
-  const ans = document.getElementById("ans3").value.trim().toUpperCase();
-  const f = document.getElementById("feedback3");
-  if (ans === "BUG") {
-    f.className = "feedback success";
-    f.textContent = "Correct! You’ve gathered your first clue: The number THREE.";
-    fadeTransition(level2);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "Wrong! Try again.";
-  }
+alert("Hint: "+hints[n])
+
 }
 
-// ----- LEVEL 2 -----
-function level2() {
-  screen.innerHTML = `
-    <h2>LEVEL 2 — DEBUGGING GRID</h2>
-    <p>Find the output of this code:<br><br><code>a = [1, 2, 3]<br>b = a<br>b.append(4)<br>print(len(a))</code><br><br>Activate the same number of grid cells as the output.</p>
-    <div class="grid" id="grid"></div>
-    <button onclick="checkGrid()">Check</button>
-    <div id="feedbackGrid" class="feedback"></div>
-  `;
-  const grid = document.getElementById("grid");
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    cell.addEventListener("click", () => cell.classList.toggle("active"));
-    grid.appendChild(cell);
-  }
+function beep(){
+
+const ctx=new AudioContext()
+
+const osc=ctx.createOscillator()
+
+osc.frequency.value=800
+
+osc.connect(ctx.destination)
+
+osc.start()
+
+osc.stop(ctx.currentTime+.1)
+
 }
 
-function checkGrid() {
-  const activeCount = document.querySelectorAll(".active").length;
-  const f = document.getElementById("feedbackGrid");
-  if (activeCount === 3) {
-    f.className = "feedback success";
-    f.textContent = "Correct! Another clue: THREE again.";
-    fadeTransition(level3);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "That’s not quite right. Try again.";
-  }
+document.addEventListener("keydown",e=>{
+
+if(e.ctrlKey && e.shiftKey && e.key==="L"){
+
+const board=JSON.parse(localStorage.getItem("codequestLeaderboard")||"[]")
+
+adminPanel.style.display="block"
+
+board.sort((a,b)=>a.time-b.time)
+
+let html="<h2>Leaderboard (Fastest First)</h2>"
+
+board.forEach((p,i)=>{
+
+html+=`
+<div>
+${i+1}. ${p.name} | ${p.college} | ${p.time}s | ${p.result}
+</div>
+`
+
+})
+
+adminPanel.innerHTML=html
+
 }
 
-// ----- LEVEL 3 -----
-function level3() {
-  screen.innerHTML = `
-    <h2>LEVEL 3 — THE CODED WORD</h2>
-    <p>Decode the message below using the rule (Shift +2):<br><br><code>VJG EQFG KU HTGG</code></p>
-    <input id="decode" placeholder="Your decoded message">
-    <button onclick="checkDecode()">Submit</button>
-    <div id="feedbackDecode" class="feedback"></div>
-  `;
-}
+})
 
-function checkDecode() {
-  const ans = document.getElementById("decode").value.trim().toUpperCase();
-  const f = document.getElementById("feedbackDecode");
-  if (ans === "THE CODE IS FREE") {
-    f.className = "feedback success";
-    f.textContent = "Correct! Now rearrange these letters: EHTRE";
-    setTimeout(() => {
-      fadeTransition(level3b);
-    }, 1200);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "Wrong decoding. Try again.";
-  }
-}
 
-function level3b() {
-  screen.innerHTML = `
-    <h2>LEVEL 3 — FINAL PUZZLE</h2>
-    <p>The final answer rhymes with the last letter.<br>Rearrange the letters below to form it:<br><br><code>EHTRE</code></p>
-    <input id="arrange" placeholder="Your answer">
-    <button onclick="checkArrange()">Submit</button>
-    <div id="feedbackArrange" class="feedback"></div>
-  `;
-}
+buildGrid()
 
-function checkArrange() {
-  const ans = document.getElementById("arrange").value.trim().toUpperCase();
-  const f = document.getElementById("feedbackArrange");
-  if (ans === "THREE") {
-    f.className = "feedback success";
-    f.textContent = "You solved it! The pattern is clear... THREE.";
-    fadeTransition(finalPortal);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "Wrong word. Try again.";
-  }
-}
-
-// ----- FINAL PORTAL -----
-function finalPortal() {
-  screen.innerHTML = `
-    <h2>FINAL PORTAL</h2>
-    <p>You reach three shimmering portals.<br>Only one leads to freedom.<br>Choose wisely — a wrong portal will trap you forever...</p>
-    <div>
-      <button class="portal-btn" onclick="choosePortal(1)">Portal 1</button>
-      <button class="portal-btn" onclick="choosePortal(2)">Portal 2</button>
-      <button class="portal-btn" onclick="choosePortal(3)">Portal 3</button>
-    </div>
-    <div id="portalFeedback" class="feedback"></div>
-  `;
-}
-
-function choosePortal(n) {
-  const f = document.getElementById("portalFeedback");
-  if (n === 3) {
-    f.className = "feedback success";
-    f.textContent = "ACCESS GRANTED — You escaped CodeQuest!";
-    setTimeout(() => {
-      screen.innerHTML = `
-        <h2>YOU ESCAPED</h2>
-        <p>Congratulations, explorer!<br>You’ve completed CodeQuest.<br><br>Your final key: <b>CODETHREE</b></p>
-      `;
-    }, 1500);
-  } else {
-    f.className = "feedback error";
-    f.textContent = "ACCESS DENIED — You’re trapped forever.";
-  }
-}
-
-// start
-intro();
 </script>
+
 </body>
 </html>
