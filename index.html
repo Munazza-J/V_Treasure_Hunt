@@ -774,7 +774,7 @@ function saveResult(result){
   }
 
   // ✅ SEND TO GOOGLE SHEETS
-  fetch("https://script.google.com/macros/s/AKfycbwk-y-GAB0FiKPOldFha6kMs7q6kSXjnpOkDQpGc_PbtQBrfZlGAOM898oXyedwMVQCWg/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbziw_EJrZCcevx0cst3_GyFUKIikdkaeMf2qqBxuXcTz1IEpSTBvOpthmujGGYarWu3SA/exec", {
     method: "POST",
     body: JSON.stringify({
       name: player.name,
@@ -807,7 +807,7 @@ const hints={
 2:"Database language",
 3:"Programming error",
 4:"Count loop iterations",
-5:"Caesar cipher shift +2"
+5:"Caesar cipher shift -2"
 }
 
 alert("Hint: "+hints[n])
