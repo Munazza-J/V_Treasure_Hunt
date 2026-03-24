@@ -774,23 +774,23 @@ function saveResult(result){
   }
 
   // ✅ SEND TO GOOGLE SHEETS
-  fetch("https://script.google.com/macros/s/AKfycbziw_EJrZCcevx0cst3_GyFUKIikdkaeMf2qqBxuXcTz1IEpSTBvOpthmujGGYarWu3SA/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      name: player.name,
-      course: player.course,
-      college: player.college,
-      time: timeTaken,
-      score: score,
-      result: result
-    }),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-  .then(res => res.text())
-  .then(data => console.log("Saved to sheet:", data))
-  .catch(err => console.error("Error:", err));
+  fetch("https://script.google.com/macros/s/AKfycbwjoOkwvQItPoQz9oF13vWfckMJmZtgF1AQZl0NXzg-4lLTKwxElvEnDd-BKAxLGa-gvQ/exec", {
+  method: "POST",
+  body: JSON.stringify({
+    name: player.name,
+    course: player.course,
+    college: player.college,
+    time: timeTaken,
+    score: score,
+    result: result
+  }),
+  headers: {
+    "Content-Type": "text/plain"
+  }
+})
+.then(res => res.text())
+.then(data => console.log("Saved:", data))
+.catch(err => console.error("Error:", err));
 
   // ✅ LOCAL STORAGE (your existing system)
   let board = JSON.parse(localStorage.getItem("codequestLeaderboard") || "[]")
