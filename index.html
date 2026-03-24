@@ -758,27 +758,46 @@ saveResult("LOSE")
 
 function saveResult(result){
 
-endTime=Date.now()
+  endTime = Date.now()
 
-const timeTaken=Math.floor((endTime-startTime)/1000)
+  const timeTaken = Math.floor((endTime - startTime)/1000)
 
-const record={
-name:player.name,
-course:player.course,
-college:player.college,
-start:startTime,
-end:endTime,
-time:timeTaken,
-score:score,
-result:result
-}
+  const record = {
+    name: player.name,
+    course: player.course,
+    college: player.college,
+    start: startTime,
+    end: endTime,
+    time: timeTaken,
+    score: score,
+    result: result
+  }
 
-let board=JSON.parse(localStorage.getItem("codequestLeaderboard")||"[]")
+  // ✅ SEND TO GOOGLE SHEETS
+  fetch("https://script.google.com/macros/s/AKfycbwk-y-GAB0FiKPOldFha6kMs7q6kSXjnpOkDQpGc_PbtQBrfZlGAOM898oXyedwMVQCWg/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      name: player.name,
+      course: player.course,
+      college: player.college,
+      time: timeTaken,
+      score: score,
+      result: result
+    }),
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+  .then(res => res.text())
+  .then(data => console.log("Saved to sheet:", data))
+  .catch(err => console.error("Error:", err));
 
-board.push(record)
+  // ✅ LOCAL STORAGE (your existing system)
+  let board = JSON.parse(localStorage.getItem("codequestLeaderboard") || "[]")
 
-localStorage.setItem("codequestLeaderboard",JSON.stringify(board))
+  board.push(record)
 
+  localStorage.setItem("codequestLeaderboard", JSON.stringify(board))
 }
 
 function showHint(n){
